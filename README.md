@@ -17,10 +17,7 @@ Driver:
 EVB user interface:
 - Python3
 - NumPy
-- Matplotlib
 - ctypes
-- PyQt5
-- PyQtGraph
 - sciPy
 
 
