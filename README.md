@@ -14,36 +14,30 @@ Driver:
 - Python3
 - pySerial
 
-EVB user interface:
-- Python3
-- NumPy
-- ctypes
-- sciPy
-
 
 ## Getting started
 
 ### Installation
 
-1. get the sources and chdir to the project-root directory
-2. Use pip to install mlx90640.
-```bash
-pip3 install .
-```
 
+```bash
+pip install mlx9064x-driver
+```
 
 ### Running the driver demo
 
-Open a terminal and run following command:
+* Connect the EVB to your PC.  
+* pen a terminal and run following command:  
+
 
 ```bash
-mlx90640-dump-frame
+mlx9064x-dump-frame auto
 ```
 
 This program takes 1 optional argument.
 
 ```bash
-mlx90640-dump-frame <communication-port>
+mlx9064x-dump-frame <communication-port>
 ```
 
 `<communication-port>` can be:
@@ -76,14 +70,15 @@ f = dev.do_compensation(frame)  # calculates the temperatures for each pixel
 
 ## Issues and new Features
 
-In case you have any problems with usage of the plugin, please open an issue on GitHub. Provide as many valid information as possible, as this will help us to resolve Issues faster. We would also like to hear your suggestions about new features which would help your Continuous Integration run better.
-
+In case you have any problems with usage of the plugin, please open an issue on GitHub.  
+Provide as many valid information as possible, as this will help us to resolve Issues faster.  
+We would also like to hear your suggestions about new features which would help your Continuous Integration run better.
 
 ## Raspberry pi 3B+
 
-We tested this package for Rapberry Pi only on a 3B+ configuration with raspbian buster september release.
+This driver is validated to work on a Rapberry Pi 3B+ configuration with raspbian buster february 2020 release.
 
-### Installation (experimental, not yet operational on RPi)
+### Installation
 
 - `sudo raspi-config`
     - 'enable i2c' in interface; in case you want to connect MLX9064x on the I2C bus of RPi.
