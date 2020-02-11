@@ -32,18 +32,18 @@ pip3 install .
 ```
 
 
-### Running EVB90640.py demo
+### Running the driver demo
 
 Open a terminal and run following command:
 
 ```bash
-EVB90640-demo
+mlx90640-dump-frame
 ```
 
 This program takes 1 optional argument.
 
 ```bash
-EVB90640-demo <communication-port>
+mlx90640-dump-frame <communication-port>
 ```
 
 `<communication-port>` can be:
@@ -52,7 +52,7 @@ EVB90640-demo <communication-port>
 - `/dev/ttyUSBx` comport on linux platform for EVB90640 HW, where x is the comport number.
 - `/dev/ttyACMx` comport on raspberry pi linux platform for EVB90640 HW, where x is the comport number.
 - `I2C-1` on raspberry pi use the I2C hardware; it requires raspi-config to enable i2c hardware.
-- `I2CBB-<sda>-<scl>` on raspberry pi, with **B**it**B**anging software I2C on any GPIO pin. 
+- `I2CBB-<sda>-<scl>` [I2CBB-03-05] on raspberry pi, with **B**it**B**anging software I2C on any GPIO pin. 
      - `<sda>` is a 2-digit number of the physical pin (default: 03)
      - `<scl>` is a 2-digit number of the physical pin (default: 05)
 
@@ -89,11 +89,11 @@ We tested this package for Rapberry Pi only on a 3B+ configuration with raspbian
     - 'enable i2c' in interface; in case you want to connect MLX9064x on the I2C bus of RPi.
     - optional: 'enable ssh' in interface; now you can login remotely over the network.
 - `sudo pip3 install virtualenv`
-- `sudo apt-get update`
-- `sudo apt-get install python3-opencv`
-- `sudo apt-get install qt5-default`
-- `sudo apt-get install libatlas-base-dev`
-- `sudo apt-get install python3-scipy`
+- optional: `sudo apt-get update`
+- optional: `sudo apt-get install python3-opencv`
+- optional: `sudo apt-get install qt5-default`
+- optional: `sudo apt-get install libatlas-base-dev`
+- optional: `sudo apt-get install python3-scipy`
 - `cd <mlx90640-py>`
 - `virtualenv --system-site-packages pyvenv`
 - `. pyvenv/bin/activate`

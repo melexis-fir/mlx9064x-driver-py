@@ -1,4 +1,0 @@
-numpy>=1.16.2
-scipy>=1.1.0
-RPi.GPIO>=0.7.0
-smbus2>=0.3.0

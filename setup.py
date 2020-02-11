@@ -2,24 +2,32 @@ from setuptools import setup
 import sys
 import platform
 
+version='1.1.2'
+
 requires = ['pyserial>=3.4',
             'ctypes-callable>=1.0.0',
             ]
 
-requirements_file = 'requirements.txt'
 if platform.machine().startswith('armv'):
-    requirements_file = 'requirements_rpi.txt'
+    requires += [
+      'RPi.GPIO>=0.7.0',
+      'smbus2>=0.3.0'
+    ];
 
-with open(requirements_file) as f:
-    requires += f.read().splitlines()
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 setup(
-    name='mlx.mlx90640',
-    version='1.0',
-    description='Python library for MLX90640',
+    name='mlx9064x-driver',
+    version=version,
+    description='Python library for MLX90640-41',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     license='Apache License, Version 2.0',
-    entry_points = {'console_scripts': ['mlx90640-dump-frame = mlx.examples.mlx90640_dump_frame:main']},
+    entry_points = {'console_scripts': ['mlx9064x-dump-frame = mlx.examples.mlx90640_dump_frame:main']},
     install_requires=requires,
+    url = 'https://github.com/melexis-fir/mlx9064x-driver-py',   # Provide either the link to your github or to your website
+    download_url = 'https://github.com/melexis-fir/mlx9064x-driver-py/archive/V'+version+'.tar.gz',
     packages=['mlx/','mlx/pympt','mlx/examples'],
     classifiers=[
         # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
@@ -27,6 +35,7 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: Microsoft :: Windows',
+	'Operating System :: POSIX',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
