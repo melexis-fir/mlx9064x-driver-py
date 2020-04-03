@@ -2,23 +2,15 @@ from setuptools import setup
 import sys
 import platform
 
-version='1.2.1'
+version='1.2.2'
 
 requires = ['pyserial>=3.4',
             'ctypes-callable>=1.0.0',
+            'RPi.GPIO>=0.7.0 ; platform_machine=="armv7"',
+            'smbus2>=0.3.0; platform_machine=="armv7"'
+            'Jetson.GPIO>=2.0.8 ; platform_machine=="aarch64"',
+            'smbus2>=0.3.0; platform_machine=="aarch64"'
             ]
-
-if platform.machine().startswith('armv'):
-    requires += [
-      'RPi.GPIO>=0.7.0',
-      'smbus2>=0.3.0'
-    ];
-
-if platform.machine().startswith('aarch64'):
-    requires += [
-      'Jetson.GPIO>=2.0.8',
-      'smbus2>=0.3.0'
-    ];
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
