@@ -2,6 +2,7 @@
 from mlx.pympt.channel import *
 import serial
 
+DEBUG_PRINT=0
 
 class UsbSerialChannel(MptChannel):
     def __init__(self):
@@ -14,7 +15,7 @@ class UsbSerialChannel(MptChannel):
         :raises SerialException: In case the device can not be found or can not be configured.
         :returns if the connection was successful
         """
-        if 'timeout' not in serial_args: serial_args['timeout'] = 30
+        if 'timeout' not in serial_args: serial_args['timeout'] = 10
         self.serial_con = serial.serial_for_url(port, **serial_args)
         if not self.serial_con.is_open:
             self.serial_con = None

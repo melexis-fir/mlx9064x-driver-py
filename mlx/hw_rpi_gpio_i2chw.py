@@ -2,9 +2,11 @@ from smbus2 import SMBus, i2c_msg
 import time
 import struct
 import os
+from mlx.hw_i2c_hal import HwI2cHalMlx90640
+import platform
 
 
-class HwRpiI2cHw:
+class HwRpiI2cHw(HwI2cHalMlx90640):
     support_buffer = False
     pass
 
@@ -12,7 +14,7 @@ class HwRpiI2cHw:
         if isinstance(channel, str) and channel.startswith ("I2C-"):
             channel = int(channel[4:])
 
-        if channel == 1:
+        if channel == 1 and platform.machine().startswith('armv'):
             os.system('raspi-gpio set 2 a0')
             os.system('raspi-gpio set 3 a0')
         self.i2c = SMBus(channel)

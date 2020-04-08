@@ -2,7 +2,7 @@ from setuptools import setup
 import sys
 import platform
 
-version='1.1.3'
+version='1.2.0'
 
 requires = ['pyserial>=3.4',
             'ctypes-callable>=1.0.0',
@@ -11,6 +11,12 @@ requires = ['pyserial>=3.4',
 if platform.machine().startswith('armv'):
     requires += [
       'RPi.GPIO>=0.7.0',
+      'smbus2>=0.3.0'
+    ];
+
+if platform.machine().startswith('aarch64'):
+    requires += [
+      'Jetson.GPIO>=2.0.8',
       'smbus2>=0.3.0'
     ];
 

@@ -1,8 +1,9 @@
 import RPi.GPIO as GPIO
 import time
+from mlx.hw_i2c_hal import HwI2cHalMlx90640
 
 
-class HwRpiGpioBitBang:
+class HwRpiGpioBitBang(HwI2cHalMlx90640):
     support_buffer = False
     pass
 
@@ -56,6 +57,9 @@ class I2cBitBang:
     ACK = 0
 
     def __init__(self, sda, scl, freq=400000):
+        GPIO.setwarnings(False)
+        GPIO.setmode(GPIO.BOARD)
+        GPIO.cleanup ([sda, scl])
         GPIO.setmode(GPIO.BOARD)
         self.freq = freq
         self.scl = scl
@@ -161,6 +165,7 @@ class I2cBitBang:
 
 def main ():
     i2c = I2cBitBang(3,5)
+
     for i2c_addr in range (127):
         i2c.start ()
         ack = i2c.send_byte (i2c_addr << 1 | I2cBitBang.READ)
