@@ -2,7 +2,7 @@ from setuptools import setup
 import sys
 import platform
 
-version='1.2.0'
+version='1.2.1'
 
 requires = ['pyserial>=3.4',
             'ctypes-callable>=1.0.0',
