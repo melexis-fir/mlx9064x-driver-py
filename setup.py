@@ -2,12 +2,12 @@ from setuptools import setup
 import sys
 import platform
 
-version='1.2.3'
+version='1.2.4'
 
 requires = ['pyserial>=3.4',
             'ctypes-callable>=1.0.0',
-            'RPi.GPIO>=0.7.0 ; platform_machine=="armv7"',
-            'smbus2>=0.3.0; platform_machine=="armv7"',
+            'RPi.GPIO>=0.7.0 ; platform_machine=="armv7l"',
+            'smbus2>=0.3.0; platform_machine=="armv7l"',
             'Jetson.GPIO>=2.0.8 ; platform_machine=="aarch64"',
             'smbus2>=0.3.0; platform_machine=="aarch64"'
             ]
