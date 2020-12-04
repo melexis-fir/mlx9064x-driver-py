@@ -33,14 +33,13 @@ class Mlx9064x:
         else:
             self.hw = hw
         self.i2c_addr = i2c_addr
-        self.frame_rate = property(self.get_frame_rate, self.set_frame_rate)
         self.calc_params = TCalcParams()
         self.m_lFilterTgcDepth = 8
         self.m_arrLastTgc = [[0] * TCalcParams.NUM_PAGES] * TCalcParams.NUM_TGC
-        self.m_fEmissivity = 1.0
+        self.emissivity = 1.0
 
         self.hw.connect()
-        self.set_frame_rate(frame_rate)
+        self.frame_rate = frame_rate
         if self.hw.get_sensor_type(0x33) == 0:
             self.frame_length_bytes = 32 * 26 * 2
             self.eeprom = Mlx90640EEPROM(self)
@@ -58,17 +57,15 @@ class Mlx9064x:
         if callable(getattr(self.hw, 'set_vdd', None)):
             self.hw.set_vdd(vdd)
 
-    def get_frame_rate(self):
-        return self.frame_rate
+    @property
+    def frame_rate(self):
+        return self.__frame_rate
 
-    def clear_error(self, frame_rate_hz):
-        if callable(getattr(self.hw, 'clear_error', None)):
-            self.hw.clear_error(self.i2c_addr, frame_rate_hz)
-
-    def set_frame_rate(self, frame_rate_hz):
+    @frame_rate.setter
+    def frame_rate(self, frame_rate):
         """
         Set the refresh rate of the camera
-        :param float frame_rate_hz: the new frame rate for the camera
+        :param float frame_rate: the new frame rate for the camera
         """
         # set the refresh rate on the chip
         ctrl_reg_1, status = self.hw.i2c_read(self.i2c_addr, 0x800D, 2)
@@ -76,10 +73,10 @@ class Mlx9064x:
             raise I2CAcknowledgeError("Error during read of Control register 1")
         ctrl_reg_1 = struct.unpack(">H", ctrl_reg_1)[0]  # TODO find endian
 
-        frame_rate_code = Mlx9064x.frame_rate_to_bit_mask(frame_rate_hz)
+        frame_rate_code = Mlx9064x.frame_rate_to_bit_mask(frame_rate)
         if frame_rate_code is None:
             raise ValueError("Invalid value for frame rate: {}; valid values are {}"
-                             .format(frame_rate_hz, [0.5, 1, 2, 4, 8, 16, 32, 64]))
+                             .format(frame_rate, [0.5, 1, 2, 4, 8, 16, 32, 64]))
         else:
             ctrl_reg_1 &= 0xFC7F  # clear the 3 bits that represent the frame rate
             ctrl_reg_1 |= frame_rate_code << 7
@@ -87,10 +84,15 @@ class Mlx9064x:
         status = self.hw.i2c_write(self.i2c_addr, 0x800D, struct.pack(">H", ctrl_reg_1))
         if 0 != status:
             raise I2CAcknowledgeError("Error during write of Control register 1")
+        self.__frame_rate = frame_rate
 
         self.set_vdd(3.3)
         if self.hw.support_buffer:
-            self.hw.start_data_acquisition(self.i2c_addr, frame_rate_hz)
+            self.hw.start_data_acquisition(self.i2c_addr, frame_rate)
+
+    def clear_error(self, frame_rate_hz):
+        if callable(getattr(self.hw, 'clear_error', None)):
+            self.hw.clear_error(self.i2c_addr, frame_rate_hz)
 
     @staticmethod
     def frame_rate_to_bit_mask(f_rate):
@@ -350,7 +352,12 @@ class Mlx9064x:
             result_frame[i] = To
         return result_frame
 
-    def set_m_fEmissivity(self, emissivity):
+    @property
+    def emissivity(self):
+        return self.m_fEmissivity
+
+    @emissivity.setter
+    def emissivity(self, emissivity):
         self.m_fEmissivity = emissivity
 
     def calculate_parameters(self):

@@ -1,13 +1,7 @@
-import os, sys
-# work-around for having the parent directory added to the search path of packages.
-# to make `import mlx.pympt` to work, even EVB pip package itself is not installed!
-# note: when installed, it will take the installed version!
-# https://chrisyeh96.github.io/2017/08/08/definitive-guide-python-imports.html#case-2-syspath-could-change
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
-
 from mlx.mlx90640 import Mlx9064x
-
+import sys
 import time
+
 
 def main():
     if len(sys.argv) <= 1:
@@ -43,9 +37,9 @@ def main():
             frame_rate = float(sys.argv[3])
         pass
 
-
     dev = Mlx9064x(port, frame_rate=frame_rate)
     dev.init()
+    dev.emissivity = 0.95
 
     frame_count = 0
     while frame_count < max_frames:
