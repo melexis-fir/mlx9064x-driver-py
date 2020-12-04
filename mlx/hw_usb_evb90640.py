@@ -9,7 +9,8 @@ import struct
 from math import ceil
 
 
-USB_DEVICE_SERIAL_NO = 'MLXEVB90640'
+USB_VID = 1001
+USB_PID = 32
 
 
 class Mlx90640Commands:
@@ -42,7 +43,7 @@ class HwUsbEvb90640(HwI2cHalMlx90640):
 
         self.comport = comport
         if comport is None or comport == 'auto':
-            comports = HwUsbEvb90640.list_serial_ports(USB_DEVICE_SERIAL_NO)
+            comports = HwUsbEvb90640.list_serial_ports(USB_PID, USB_VID)
             if len(comports) < 1:
                 raise ValueError("no EVB90640 found; please connect to USB port")
             if len(comports) > 1:
@@ -54,7 +55,7 @@ class HwUsbEvb90640(HwI2cHalMlx90640):
         self.channel.connect(self.comport)
 
     @staticmethod
-    def list_serial_ports(serial_number=None):
+    def list_serial_ports(pid=None, vid=None):
         """ Lists serial port names which startswith serial_number like in argument.
 
         :raises EnvironmentError:
@@ -65,10 +66,10 @@ class HwUsbEvb90640(HwI2cHalMlx90640):
         ports = []
         if sys.platform.startswith('win') or sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
             for sp in serial.tools.list_ports.comports():
-                if serial_number is None:
+                if pid is None or vid is None:
                     ports.append(str(sp.device))
                 else:
-                    if sp.serial_number is not None and sp.serial_number.startswith(serial_number):
+                    if sp.vid == vid and sp.pid == pid:
                         ports.append(str(sp.device))
             return ports
         elif sys.platform.startswith('darwin'):

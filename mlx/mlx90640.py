@@ -46,9 +46,7 @@ class Mlx9064x:
             self.eeprom = Mlx90640EEPROM(self)
         else:
             self.frame_length_bytes = 16 * 16 * 2
-            self.frame_length_bytes = 16 * 16 * 2
             self.eeprom = Mlx90641EEPROM(self)
-
 
     def init(self):
         self.eeprom.read_eeprom_from_device()
