@@ -150,10 +150,11 @@ class Mlx9064x:
     def i2c_write(self, addr, data):
         return self.hw.i2c_write(self.i2c_addr, addr, data)
 
-    def do_compensation(self, raw_frame):
+    def do_compensation(self, raw_frame, add_ambient_temperature=False):
         """
         Calculates the temperatures for each pixel
         :param raw_frame: the raw frame
+        :param add_ambient_temperature: flag to add ambient temperature at the end of the frame array.
         :return: the calculated frame as a one dimensional array
         """
         if self.hw.sensor_type == 0:
@@ -350,6 +351,8 @@ class Mlx9064x:
                         To = To1
 
             result_frame[i] = To
+        if add_ambient_temperature:
+            result_frame.append(Tamb)
         return result_frame
 
     @property

@@ -39,7 +39,7 @@ def main():
 
     dev = Mlx9064x(port, frame_rate=frame_rate)
     dev.init()
-    dev.emissivity = 0.95
+    # dev.emissivity = 0.95
 
     frame_count = 0
     while frame_count < max_frames:
@@ -47,12 +47,12 @@ def main():
         try:
             frame = dev.read_frame()
         except Exception as e:
-            print ("ERROR:", e)
+            print("ERROR:", e)
             dev.clear_error(frame_rate)
             pass
 
         if frame is not None:
-            f = dev.do_compensation(frame)
+            f = dev.do_compensation(frame, add_ambient_temperature=True)
             print(">", frame_count, ": " + ",".join(map("{:.2f}".format, f)))
             frame_count += 1
         time.sleep(0.001)
