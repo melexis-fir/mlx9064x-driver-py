@@ -311,19 +311,24 @@ class Mlx9064x:
             Pix_GainComp = raw_frame[i] * dGainComp
 
             # 2. Pixel offset compensation
+            Pix_os_ref = 0
+            Kta = 0
+            Kv = 0
             if self.hw.sensor_type == 0:
-                Pix_os = self.calc_params.Pix_os_ref[tidx][idxGlobal] * \
-                (1 + self.calc_params.Kta[tidx][idxGlobal] * dDeltaTa) * \
-                (1 + self.calc_params.Kv[tidx][idxGlobal] * dDeltaV)
+                Pix_os_ref = self.calc_params.Pix_os_ref[tidx][idxGlobal]
+                Kta = self.calc_params.Kta[tidx][idxGlobal]
+                Kv = self.calc_params.Kv[tidx][idxGlobal]
             else:
                 if page:
-                    Pix_os = self.calc_params.Pix_os_ref_SP1[tidx][idxGlobal] * \
-                    (1 + self.calc_params.Kta[tidx][idxGlobal] * dDeltaTa) * \
-                    (1 + self.calc_params.Kv[tidx][idxGlobal] * dDeltaV)
+                    Pix_os_ref = self.calc_params.Pix_os_ref_SP1[tidx][idxGlobal]
+                    Kta = self.calc_params.Kta[tidx][idxGlobal]
+                    Kv = self.calc_params.Kv[tidx][idxGlobal]
                 else:
-                    Pix_os = self.calc_params.Pix_os_ref_SP0[tidx][idxGlobal] * \
-                    (1 + self.calc_params.Kta[tidx][idxGlobal] * dDeltaTa) * \
-                    (1 + self.calc_params.Kv[tidx][idxGlobal] * dDeltaV)
+                    Pix_os_ref = self.calc_params.Pix_os_ref_SP0[tidx][idxGlobal]
+                    Kta = self.calc_params.Kta[tidx][idxGlobal]
+                    Kv = self.calc_params.Kv[tidx][idxGlobal]
+
+            Pix_os = Pix_os_ref * (1 + Kta * dDeltaTa) * (1 + Kv * dDeltaV)
 
             # 3. calculating offset free IR data
             Pix_comp = Pix_GainComp - Pix_os
@@ -354,6 +359,86 @@ class Mlx9064x:
         if add_ambient_temperature:
             result_frame.append(Tamb)
         return result_frame
+
+    def do_handle_bad_pixels(self, compensated_frame):
+        result = compensated_frame
+        if self.hw.sensor_type == 0:  # 90640
+            for pixel_i in self.eeprom.bad_pixels:
+                col = pixel_i & 0x1F
+                row = pixel_i >> 5
+                if pixel_i == 0 << 5 + 0:  # upper left corner
+                    result[pixel_i] = (result[0 << 5 + 1] + result[1 << 5 + 0] + result[1 << 5 + 1]) / 3
+                    continue
+                if pixel_i == 0 << 5 + 31:  # upper right corner
+                    result[pixel_i] = (result[0 << 5 + 30] + result[1 << 5 + 31] + result[1 << 5 + 30]) / 3
+                    continue
+                if pixel_i == 23 << 5 + 0:  # lower left corner
+                    result[pixel_i] = (result[23 << 5 + 1] + result[22 << 5 + 0] + result[22 << 5 + 1]) / 3
+                    continue
+                if pixel_i == 23 << 5 + 31:  # lower right corner
+                    result[pixel_i] = (result[23 << 5 + 30] + result[22 << 5 + 31] + result[22 << 5 + 30]) / 3
+                    continue
+
+                if col == 0:  # first col
+                    result[pixel_i] = (result[(row - 1) << 5 + col] + result[(row + 1) << 5 + col] + result[
+                        row << 5 + col + 1]) / 3
+                    continue
+                if col == 31:  # last col
+                    result[pixel_i] = (result[(row - 1) << 5 + col] + result[(row + 1) << 5 + col] + result[
+                        row << 5 + col - 1]) / 3
+                    continue
+
+                if row == 0:  # first row
+                    result[pixel_i] = (result[row << 5 + col - 1] + result[row << 5 + col + 1] + result[
+                        (row + 1) << 5 + col]) / 3
+                    continue
+                if row == 23:  # last row
+                    result[pixel_i] = (result[row << 5 + col - 1] + result[row << 5 + col + 1] + result[
+                        (row - 1) << 5 + col]) / 3
+                    continue
+                # pixel not on border
+                result[pixel_i] = (result[row << 5 + col - 1] + result[row << 5 + col + 1] + result[
+                    (row - 1) << 5 + col] + result[(row + 1) << 5 + col]) / 4
+
+        if self.hw.sensor_type == 1:  # 90641
+            for pixel_i in self.eeprom.bad_pixels:
+                col = pixel_i & 0x0F
+                row = pixel_i >> 4
+                if pixel_i == 0 << 4 + 0:  # upper left corner
+                    result[pixel_i] = (result[0 << 4 + 1] + result[1 << 4 + 0] + result[1 << 4 + 1]) / 3
+                    continue
+                if pixel_i == 0 << 4 + 15:  # upper right corner
+                    result[pixel_i] = (result[0 << 4 + 14] + result[1 << 4 + 15] + result[1 << 4 + 14]) / 3
+                    continue
+                if pixel_i == 11 << 4 + 0:  # lower left corner
+                    result[pixel_i] = (result[11 << 4 + 1] + result[10 << 4 + 0] + result[10 << 4 + 1]) / 3
+                    continue
+                if pixel_i == 11 << 4 + 15:  # lower right corner
+                    result[pixel_i] = (result[11 << 4 + 14] + result[10 << 4 + 15] + result[10 << 4 + 14]) / 3
+                    continue
+
+                if col == 0:  # first col
+                    result[pixel_i] = (result[(row - 1) << 4 + col] + result[(row + 1) << 4 + col] + result[
+                        row << 4 + col + 1]) / 3
+                    continue
+                if col == 15:  # last col
+                    result[pixel_i] = (result[(row - 1) << 4 + col] + result[(row + 1) << 4 + col] + result[
+                        row << 4 + col - 1]) / 3
+                    continue
+
+                if row == 0:  # first row
+                    result[pixel_i] = (result[row << 4 + col - 1] + result[row << 4 + col + 1] + result[
+                        (row + 1) << 4 + col]) / 3
+                    continue
+                if row == 11:  # last row
+                    result[pixel_i] = (result[row << 4 + col - 1] + result[row << 4 + col + 1] + result[
+                        (row - 1) << 4 + col]) / 3
+                    continue
+                # pixel not on border
+                result[pixel_i] = (result[row << 4 + col - 1] + result[row << 4 + col + 1] + result[
+                    (row - 1) << 4 + col] + result[(row + 1) << 4 + col]) / 4
+
+        return result
 
     @property
     def emissivity(self):
@@ -1013,6 +1098,9 @@ class Mlx90640EEPROM:
         self.device = device
         self.eeprom = None
         self.eeprom_size = 0x680
+        self.outlier_pixels = []
+        self.broken_pixels = []
+        self.bad_pixels = []
 
     def get_bit(self, index, lsb):
         return (self.eeprom[index] & (1 << lsb)) != 0
@@ -1052,6 +1140,9 @@ class Mlx90640EEPROM:
             for i in range(self.eeprom_size // 2):
                 first_read[i] |= consecutive_read[i]
         self.eeprom = first_read
+        self.extract_broken_pixels()
+        self.extract_outlier_pixels()
+        self.get_bad_pixels()
 
     def get_parameter_code(self, param_id: ParameterCodesEEPROM, index=None):
         """
@@ -1081,6 +1172,27 @@ class Mlx90640EEPROM:
                 raise IndexError("index: {} out of range ({}, {})".format(index, params[0], params[1]))
         else:
             ValueError("invalid eeprom parameter at {}".format(param_id))
+
+    def extract_outlier_pixels(self):
+        self.outlier_pixels = []
+        for pixel_i in range(768):
+            if self.eeprom[pixel_i + 64] & 0x0001:
+                self.outlier_pixels.append(pixel_i)
+        return self.outlier_pixels
+
+    def extract_broken_pixels(self):
+        self.broken_pixels = []
+        for pixel_i in range(768):
+            if self.eeprom[pixel_i + 64] == 0:
+                self.broken_pixels.append(pixel_i)
+        return self.broken_pixels
+
+    def get_bad_pixels(self):
+        self.bad_pixels = self.broken_pixels
+        for pixel_i in self.outlier_pixels:
+            if pixel_i not in self.bad_pixels:
+                self.bad_pixels.append(pixel_i)
+        return self.bad_pixels
 
 
 class Mlx90641EEPROM:
@@ -1150,6 +1262,7 @@ class Mlx90641EEPROM:
         self.device = device
         self.eeprom = None
         self.eeprom_size = 0x680
+        self.bad_pixels = []
 
     def get_bit(self, index, lsb):
         return (self.eeprom[index] & (1 << lsb)) != 0
@@ -1189,6 +1302,7 @@ class Mlx90641EEPROM:
             for i in range(self.eeprom_size // 2):
                 first_read[i] |= consecutive_read[i]
         self.eeprom = first_read
+        self.get_bad_pixels()
 
     def get_parameter_code(self, param_id: ParameterCodesEEPROM, index=None):
         """
@@ -1218,6 +1332,17 @@ class Mlx90641EEPROM:
                 raise IndexError("index: {} out of range ({}, {})".format(index, params[0], params[1]))
         else:
             ValueError("invalid eeprom parameter at {}".format(param_id))
+
+    def get_bad_pixels(self):
+        self.bad_pixels = []
+        for pixel_i in range(192):
+            if self.eeprom[0x0040 + pixel_i] == 0:
+                if self.eeprom[0x0100 + pixel_i] == 0:
+                    if self.eeprom[0x01C0 + pixel_i] == 0:
+                        if self.eeprom[0x0680 + pixel_i] == 0:
+                            self.bad_pixels.append(pixel_i)
+
+        return self.bad_pixels
 
 
 def main():

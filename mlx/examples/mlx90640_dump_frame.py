@@ -39,7 +39,7 @@ def main():
 
     dev = Mlx9064x(port, frame_rate=frame_rate)
     dev.init()
-    # dev.emissivity = 0.95
+    dev.emissivity = 0.95
 
     frame_count = 0
     while frame_count < max_frames:
@@ -53,7 +53,9 @@ def main():
 
         if frame is not None:
             f = dev.do_compensation(frame, add_ambient_temperature=True)
-            print(">", frame_count, ": " + ",".join(map("{:.2f}".format, f)))
+            f = dev.do_handle_bad_pixels(f)
+            amb = f.pop() # pop ambient temperature from the array.
+            print(">", frame_count, ": AMB: {:6.2f} Array: ".format(amb) + ",".join(map("{:.2f}".format, f)))
             frame_count += 1
         time.sleep(0.001)
 
