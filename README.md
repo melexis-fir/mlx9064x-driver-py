@@ -3,7 +3,7 @@
 This python driver for MLX90640 and MLX90641 aims to facilitate the interfacing on a PC.
 
 Currently this driver supports 3 type of interfaces:
-- EVB90640-41 ==> https://www.melexis.com/en/product/EVB90640-41/Evaluation-Board-MLX90640
+- EVB90640-41 ==> https://www.melexis.com/en/product/EVB90640-41/
 - Raspberry Pi with I2C on any GPIO pin.
 - Raspberry Pi on built-in hardware I2C bus.
 
@@ -23,6 +23,8 @@ Driver:
 ```bash
 pip install mlx9064x-driver
 ```
+
+https://pypi.org/project/mlx9064x-driver/
 
 ### Running the driver demo
 
